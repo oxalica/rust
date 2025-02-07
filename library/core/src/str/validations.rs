@@ -252,12 +252,12 @@ const fn next_state(st: u32, byte: u8) -> u32 {
 
 #[cfg(any(target_pointer_width = "16", target_pointer_width = "32"))]
 #[inline(always)]
-fn next_state(st: u32, byte: u8) -> u32 {
+const fn next_state(st: u32, byte: u8) -> u32 {
     // SAFETY: `u64` is more aligned than `u32`, and has the same repr as `[u32; 2]`.
-    let [lo, hi] = unsafe { std::mem::transmute::<u64, [u32; 2]>(TRANS_TABLE[byte as usize]) };
+    let [lo, hi] = unsafe { crate::mem::transmute::<u64, [u32; 2]>(TRANS_TABLE[byte as usize]) };
     #[cfg(target_endian = "big")]
     let (lo, hi) = (hi, lo);
-    (st & 32 == 0).select_unpredictable(lo, hi).wrapping_shr(st)
+    if st & 32 == 0 { lo } else { hi }.wrapping_shr(st)
 }
 
 /// Check if `byte` is a valid UTF-8 first byte, assuming it must be a valid first or
