@@ -356,7 +356,10 @@ fn run_utf8_validation_rt(bytes: &[u8]) -> Result<(), Utf8Error> {
 
     while i + MAIN_CHUNK_SIZE <= bytes.len() {
         // Fast path: if the current state is ACCEPT, we can skip to the next non-ASCII chunk.
-        if st == ST_ACCEPT {
+        // We also did a quick inspection on the first byte to avoid getting into this path at all
+        // when handling strings with almost no ASCII, eg. Chinese scripts.
+        // SAFETY: `i` is inbound.
+        if st == ST_ACCEPT && unsafe { *bytes.get_unchecked(i) } < 0x80 {
             // SAFETY: `i` is inbound.
             let rest = unsafe { bytes.get_unchecked(i..) };
             let mut ascii_chunks = rest.array_chunks::<ASCII_CHUNK_SIZE>();
