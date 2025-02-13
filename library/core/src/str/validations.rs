@@ -297,9 +297,9 @@ fn run_utf8_validation_rt(bytes: &[u8]) -> Result<(), Utf8Error> {
         // Fast path: if the current state is ACCEPT, we can skip to the next non-ASCII chunk.
         // We also did a quick inspection on the first byte to avoid getting into this path at all
         // when handling strings with almost no ASCII, eg. Chinese scripts.
-        // SAFETY: `i` is inbound.
+        // SAFETY: `i` is in bound.
         if st == ST_ACCEPT && unsafe { *bytes.get_unchecked(i) } < 0x80 {
-            // SAFETY: `i` is inbound.
+            // SAFETY: `i` is in bound.
             let rest = unsafe { bytes.get_unchecked(i..) };
             let mut ascii_chunks = rest.array_chunks::<ASCII_CHUNK_SIZE>();
             let ascii_rest_chunk_cnt = ascii_chunks.len();
@@ -318,7 +318,7 @@ fn run_utf8_validation_rt(bytes: &[u8]) -> Result<(), Utf8Error> {
             }
         }
 
-        // SAFETY: `i` and `i + MAIN_CHUNK_SIZE` are inbound by loop invariant.
+        // SAFETY: `i` and `i + MAIN_CHUNK_SIZE` are in bound by loop invariant.
         let chunk = unsafe { &*bytes.as_ptr().add(i).cast::<[u8; MAIN_CHUNK_SIZE]>() };
         let mut new_st = st;
         for &b in chunk {
